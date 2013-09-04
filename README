@@ -1,0 +1,111 @@
+README for depot/Tumri/build
+
+Table of Contents
+-----------------
+Introduction
+Introduction to building the tree
+Adding new projects
+Support for partially checked-out trees
+Conventions for subdirectory build.xml files
+
+Introduction
+------------
+This directory provides support for building and installing the entire Tumri
+tree.  The main file is build.xml which is the top level build driver script.
+Each project has its own .xml file, e.g. tmc.xml, that is the
+interface between the top level build support and the project.
+
+Introduction to building the tree
+---------------------------------
+Building the tree involves two steps.  The first step is to configure the
+tree.  This involves specifying various parameters that will be used to
+either build the tree or will be used by the running program(s).  The second
+step is to do the actual build.  In its most simplest form, the steps are:
+
+bash$ alias bant='ant -f build/build.xml'
+bash$ bant configure
+bash$ bant build
+
+The "configure" step is the only mildly tricky part.  It involves creating a
+file named "buildconf.properties" in the top directory, i.e. depot/Tumri
+(unless you are in a branch, in which case it might be
+depot/branch/<mumble>/Tumri).
+And this ignores building outside of the source tree which we currently don't
+support.
+
+There are two ways to configure the tree.  The first way is to run
+"bant configure" without any options.  This will copy
+build/default.buildconf.properties to buildconf.properties.  After this you
+can manually edit the file if you like.
+
+The second way is to specify the file you want to use when you configure.
+This is done by specifying
+-Dwith.buildconf.properties=/path/to/your/buildconf.properties
+when you configure.  Example:
+
+bash$ bant configure -Dwith.buildconf.properties=/home/dje/ss/mybuildconf.properties
+
+Documentation of the various build-related properties may be found in
+build/default.buildconf.properties.
+NOTE: It is still very much a work-in-progress.  All the various projects
+need to review their property files and decide which properties to make
+configurable at build time.  Such properties include at least anything the
+programmer may need to change in order to do the build (e.g. path names).
+
+If the tree is already configured you will get the error:
+
+BUILD FAILED
+/home/dje/ss/depot/Tumri/build/build.xml:105: Tree already configured.
+
+This is to prevent accidentally clobbering an existing configuration file
+which may have precious info in it.  If you do want to reconfigure a tree, do:
+
+bash$ bant distclean
+
+first.  This will clear out the existing configuration.
+
+To build the tree do:
+
+bash$ bant build
+
+After the tree is configured and built you typically want to install it.
+That is still a work-in-progress because various programs are installed
+in various ways that is still ill-understood.  But basically you run
+
+bash$ bant install
+
+Adding new projects
+-------------------
+The build system is designed so that "monkey-see monkey-do" hacking pretty
+much "just works".  In other words, to add a new project:
+- copy an existing file, say icornerstore.xml
+- tweak it to work with the new project
+- grep for, say, icornerstore in this directory's build.xml file and make a
+  copy of each occurrence to work with the new project
+
+Support for partially checked-out trees
+---------------------------------------
+The build system works even if only part of the tree is checked out.
+For partial trees, inter-module dependencies must still be satisfied however:
+if project A requires project B to build, project B must still be checked out.
+
+You can even control what to build by setting various enable.<project>
+properties in buildconf.properties.
+
+Conventions for subdirectory build.xml files
+--------------------------------------------
+There is a deliberate API between the top level build support and the
+projects in various subdirectories.  Every project needs a "build.xml"
+file in subdirectory "build" (e.g. Java/iCornerStore/build/build.xml).
+
+The existence of this build.xml file is what is used to decide whether the
+subdirectory has been checked out.  For example, grep for "available"
+in tmc.xml.
+
+The project's build.xml file needs to have siz standard targets:
+top-clean, top-build, top-install, top-build-doc, top-install-doc,
+top-run-tests.
+The "top-" prefix stands for the top level build harness, and is used
+to distinguish and separate the targets from other targets in the file.
+top-build-doc/top-install-doc are for installing all documentation,
+internal and external (e.g., it is not just for javadocs).

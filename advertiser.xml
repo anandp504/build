@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<project name="advertiser" default="no-default" basedir="..">
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.advertiser">
+        <and>
+            <available file="Java/TumriAdvertisers/build/build.xml"/>
+            <istrue value="${enable.advertiser}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-advertiser"
+            description="Remove all advertiser build objects from the tree."
+            if="build.advertiser">
+        <ant dir="Java/TumriAdvertisers" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <!-- FIXME: This depends on zini-java-api because it is the correct
+         thing to do.  The dependency is not used yet however, we need to
+         stop checking in machine generated files from our own sources.  -->
+
+    <target name="build-advertiser"
+            depends="init,build-zini-java-api"
+            description="Build advertiser console."
+            if="build.advertiser">
+        <ant dir="Java/TumriAdvertisers" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-advertiser"
+            depends="init"
+            description="Install advertiser console."
+            if="build.advertiser">
+        <!-- NOTE: This does not depend on `build-advertiser' ON PURPOSE. -->
+        <ant dir="Java/TumriAdvertisers" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-advertiser"
+            depends="init"
+            description="Build docs for advertiser console."
+            if="build.advertiser">
+        <ant dir="Java/TumriAdvertisers" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-advertiser"
+            depends="init"
+            description="Install docs for advertiser console."
+            if="build.advertiser">
+        <!-- NOTE: This does not depend on `build-doc-advertiser' ON PURPOSE. -->
+        <!-- FIXME: not implemented yet -->
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-advertiser"
+            depends="init"
+            description="Run the advertiser console testsuite."
+            if="build.advertiser">
+	<echo message="no testsuite yet"/>
+    </target>
+
+</project>

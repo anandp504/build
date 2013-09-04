@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<project name="pdlp" default="no-default" basedir="..">
+
+    <!-- Partner Data Log Processor -->
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+
+    <condition property="build.pdlp">
+        <and>
+            <istrue value="${enable.pdlp}"/>
+            <available file="tas/pdlp/build/build.xml"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-pdlp"
+            description="Remove all pdlp build objects from the tree."
+            if="build.pdlp">
+        <ant dir="tas/pdlp" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+    <target name="build-pdlp"
+            description="Build pdlp."
+            if="build.pdlp">
+        <ant dir="tas/pdlp" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+</project>

@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<project name="tm" default="no-default" basedir="..">
+
+    <!-- task manager  -->
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+	
+    <condition property="build.tm">
+        <and>
+            <available file="tas/tm/build/build.xml"/>
+            <istrue value="${enable.tm}"/> 
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-tm"
+            description="Remove all tm build objects from the tree."
+            if="build.tm">
+        <ant dir="tas/tm" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-tm"
+            depends="init"
+            description="Build tm."
+            if="build.tm">
+        <ant dir="tas/tm" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-lib-tm"
+            depends="init"
+            description="Build tm."
+            if="build.tm">
+        <ant dir="tas/tm" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+    <target name="install-tm"
+            depends="init"
+            description="Install tm."
+            if="build.tm">
+        <!-- NOTE: This does not depend on `build-tm' ON PURPOSE. -->
+        <ant dir="tas/tm" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-tm"
+            depends="init"
+            description="Build docs for tm."
+            if="build.tm">
+        <ant dir="tas/tm" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-tm"
+            depends="init"
+            description="Install docs for tm."
+            if="build.tm">
+        <!-- NOTE: This does not depend on `build-doc-tm' ON PURPOSE. -->
+        <ant dir="tas/tm" antfile="build/build.xml"
+             target="top-install-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-tm"
+            depends="init"
+            description="Run the tm testsuite."
+            if="build.tm">
+        <ant dir="tas/tm" antfile="build/build.xml"
+             target="top-run-tests" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+</project>

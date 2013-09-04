@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<project name="tc" default="no-default" basedir="..">
+
+    <!-- tc: Tumri Campaigner -->
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.tc">
+        <and>
+            <available file="tas/tc/build/build.xml"/> 
+            <istrue value="${enable.tc}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-tc"
+            description="Remove all tc build objects from the tree."
+            if="build.tc">
+        <ant dir="tas/tc" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+    <!-- FIXME! CMA and MediaBuying builds are also dependencies, and must be added here -->
+    <target name="build-tc"
+            description="Build tc."
+            if="build.tc">
+        <ant dir="tas/tc" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+    
+    <!-- ****************************************************************** -->
+
+    <target name="install-tc"
+            description="Install tc."
+            if="build.trs">
+        <!-- NOTE: This does not depend on `build-tc' ON PURPOSE. -->
+        <ant dir="tas/tc" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-tc"
+            description="Build docs for tc."
+            if="build.tc">
+        <ant dir="tas/tc" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-tc"
+            description="Install docs for tc."
+            if="build.tc">
+        <!-- NOTE: This does not depend on `build-doc-tc' ON PURPOSE. -->
+        <ant dir="tas/tc" antfile="build/build.xml"
+             target="top-install-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-tc"
+            description="Run the tc testsuite."
+            if="build.trs">
+        <ant dir="tas/tc" antfile="build/build.xml"
+             target="top-run-tests" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+</project>

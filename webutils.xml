@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<project name="webutils" default="no-default" basedir="..">
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.webutils">
+        <and>
+            <available file="tas/webutils/build/build.xml"/>
+            <istrue value="${enable.webutils}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-webutils"
+            description="Remove all webutils build objects from the tree."
+            if="build.webutils">
+        <ant dir="tas/webutils" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-webutils"
+            depends="init"
+            description="Build webutils."
+            if="build.webutils">
+        <ant dir="tas/webutils" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+	<!-- ****************************************************************** -->
+
+    <target name="build-lib-webutils"
+            depends="init"
+            description="Build webutils."
+            if="build.webutils">
+        <ant dir="tas/webutils" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-webutils"
+            depends="init"
+            description="Install webutils."
+            if="build.webutils">
+        <!-- NOTE: This does not depend on `build-webutils' ON PURPOSE. -->
+        <ant dir="tas/webutils" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-webutils"
+            depends="init"
+            description="Build docs for webutils."
+            if="build.webutils">
+        <ant dir="tas/webutils" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-webutils"
+            depends="init"
+            description="Install docs for webutils."
+            if="build.webutils">
+        <!-- NOTE: This does not depend on `build-doc-webutils' ON PURPOSE. -->
+        <ant dir="tas/webutils" antfile="build/build.xml"
+             target="top-install-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-webutils"
+            depends="init"
+            description="Run the webutils testsuite."
+            if="build.webutils">
+        <ant dir="tas/webutils" antfile="build/build.xml"
+             target="top-run-tests" inheritAll="true" inheritRefs="false"/>
+    </target>
+	<!-- ****************************************************************** -->
+
+    <target name="install-report-webutils"
+            depends="init"
+            description="Install docs for webutils."
+            if="build.webutils">
+        <!-- NOTE: This does not depend on `build-doc-joz' ON PURPOSE. -->
+        <ant dir="tas/webutils" antfile="build/build.xml"
+             target="top-install-report" inheritAll="true" inheritRefs="false"/>
+    </target>
+</project>

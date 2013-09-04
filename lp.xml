@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<project name="lp" default="no-default" basedir="..">
+
+    <!-- lp: Listing Platform (LP or formerly known as CP) -->
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.lp">
+        <and>
+            <available file="tas/cp/build/build.xml"/> 
+            <istrue value="${enable.lp}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-lp"
+            description="Remove all lp build objects from the tree."
+            if="build.lp">
+        <ant dir="tas/cp" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-lp"
+            depends="init"
+            description="Build lp."
+            if="build.lp">
+        <ant dir="tas/cp" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-lp"
+            depends="init"
+            description="Install lp."
+            if="build.lp">
+        <!-- NOTE: This does not depend on `build-lp' ON PURPOSE. -->
+        <ant dir="tas/cp" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-lp"
+            depends="init"
+            description="Build docs for lp."
+            if="build.lp">
+        <ant dir="tas/cp" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-lp"
+            depends="init"
+            description="Install docs for lp."
+            if="build.lp">
+        <!-- NOTE: This does not depend on `build-doc-lp' ON PURPOSE. -->
+        <ant dir="tas/cp" antfile="build/build.xml"
+             target="top-install-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-lp"
+            depends="init"
+            description="Run the lp testsuite."
+            if="build.lp">
+        <ant dir="tas/cp" antfile="build/build.xml"
+             target="top-run-tests" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+</project>

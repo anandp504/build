@@ -1,0 +1,44 @@
+ _______                  ____  _    _ _____ _      _____  
+|__   __|/\              |  _ \| |  | |_   _| |    |  __ \ 
+   | |  /  \     ______  | |_) | |  | | | | | |    | |  | |
+   | | / /\ \   |______| |  _ <| |  | | | | | |    | |  | |
+   | |/ ____ \           | |_) | |__| |_| |_| |____| |__| |
+   |_/_/    \_\          |____/ \____/|_____|______|_____/ 
+
+README
+    This is a guide to build TA using the ant tool. This document assumes you have already setup perforce workspace and checked-out TA project.
+
+    Requirements:
+      For building the entire project from scratch you will need Groovy, Grails 1.0.3 and Flex 3.x on your machine.
+      Grails is required only if you are building the buildtools.jar.
+
+    Environment:
+      To build TA, firstly you need to checkout the 'Tumri build', 'Tumri install' and 'tas buildtools' from the perforce depot.
+      These folders are available in perforce at the following locations:
+      1. Tumri build - //depot/Tumri/build
+      2. Tumri install - //depot/Tumri/install
+      3. tas buildtools - //depot/Tumri/tas/buildtools
+
+      The 'Tumri build' folder contains ant built scripts to build each project under the Tumri tree.
+      'Tumri install' folder contains groovy scripts for installation.
+
+      'tas buildtools' helps in building TA. Buildtools should be packaged to buildtools.jar and kept under 'dist' folder inside 'tas buildtools'.
+      To build it, cd to buidtools folder and run 'ant -f build/build.xml build'
+
+      You also need to set FLEX_HOME environment variable in-order to successfully build TA.
+      If Flex is not available in your machine, download open source version of Flex 3 from Perforce depot at
+      //depot/Tumri/tas/ext/flex/flex_sdk_3.6.0.16995A.zip and set FLEX_HOME.
+
+    Build:
+      Once the environment is setup, cd to the Tumri folder in your workspace
+
+      Use the following commands:
+      1. ant -f build/build.xml -p        --> Lists all avaialable build options
+      2. ant -f build/build.xml configure --> Creates buildconf.properties, which can be edited for configuring the build
+      3. ant -f build/build.xml build-ta  --> Builds ta
+
+ChangeLog
+    Created on: 12-04-2013
+
+REFERENCE
+   See //depot/Tumri/build/README to know more about the build procedure

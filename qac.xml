@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<project name="qac" default="no-default" basedir="..">
+
+    <!-- qac: Quality Assurance Console for  content pipe-line -->
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.qac">
+        <and>
+            <available file="Java/TSpecManager/build/build.xml"/>
+            <istrue value="${enable.qac}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+    <target name="clean-qac" if="build.qac"
+            description="Remove all QAC build objects from the tree." >
+         <ant dir="Java/TSpecManager" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false">
+             <property name="app.mode" value="qac"/>
+        </ant>
+        <ant dir="Java/ZiniJavaAPI" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>             
+    </target>
+    
+    <!-- ****************************************************************** -->
+    <target name="build-qac" if="build.qac"
+            description="Build QAC console."
+            >
+        <ant dir="Java/ZiniJavaAPI" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+        <ant dir="Java/TSpecManager" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false">
+             <property name="app.mode" value="qac"/>
+        </ant>
+    </target>
+
+    <!-- ****************************************************************** -->
+    <target name="install-qac" if="build.qac"
+            description="Install QAC console.">
+        <!-- NOTE: This does not depend on `build-qac' ON PURPOSE. -->
+        <ant dir="Java/TSpecManager" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+    <target name="build-doc-qac" if="build.qac"
+            description="Build docs for QAC console.">
+        <ant dir="Java/TSpecManager" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-qac" if="build.qac"
+            description="Install docs for QAC console.">
+        <!-- NOTE: This does not depend on `build-doc-tmc' ON PURPOSE. -->
+        <!-- FIXME: not implemented yet -->
+    </target>
+
+    <!-- ****************************************************************** -->
+    <target name="run-tests-qac" if="build.qac"
+            description="Run the tspec management console testsuite.">
+	    <echo message="no testsuite yet"/>
+    </target>
+</project>

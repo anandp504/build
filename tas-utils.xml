@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<project name="tas-utils" default="no-default" basedir="..">
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.tas-utils">
+        <and>
+            <available file="tas/utils/build/build.xml"/>
+            <istrue value="${enable.tas-utils}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-tas-utils"
+            description="Remove all tas-utils build objects from the tree."
+            if="build.tas-utils">
+        <ant dir="tas/utils" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-tas-utils"
+            depends="init"
+            description="Build tas-utils."
+            if="build.tas-utils">
+        <ant dir="tas/utils" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+	<!-- ****************************************************************** -->
+
+    <target name="build-lib-utils"
+            depends="init"
+            description="Build utils."
+            if="build.tas-utils">
+        <ant dir="tas/utils" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-tas-utils"
+            depends="init"
+            description="Install tas-utils."
+            if="build.tas-utils">
+        <!-- NOTE: This does not depend on `build-tas-utils' ON PURPOSE. -->
+        <ant dir="tas/utils" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-tas-utils"
+            depends="init"
+            description="Build docs for tas-utils."
+            if="build.tas-utils">
+        <ant dir="tas/utils" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-tas-utils"
+            depends="init"
+            description="Install docs for tas-utils."
+            if="build.tas-utils">
+        <!-- NOTE: This does not depend on `build-doc-tas-utils' ON PURPOSE. -->
+        <ant dir="tas/utils" antfile="build/build.xml"
+             target="top-install-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-tas-utils"
+            depends="init"
+            description="Run the tas-utils testsuite."
+            if="build.tas-utils">
+        <ant dir="tas/utils" antfile="build/build.xml"
+             target="top-run-tests" inheritAll="true" inheritRefs="false"/>
+    </target>
+	<!-- ****************************************************************** -->
+
+    <target name="install-report-tas-utils"
+            depends="init"
+            description="Install docs for jcl."
+            if="build.jcl">
+        <!-- NOTE: This does not depend on `build-doc-joz' ON PURPOSE. -->
+        <ant dir="tas/utils" antfile="build/build.xml"
+             target="top-install-report" inheritAll="true" inheritRefs="false"/>
+    </target>
+</project>

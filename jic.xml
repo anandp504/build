@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<project name="jic" default="no-default" basedir="..">
+
+    <!-- joz: Java version of Soz -->
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.jic">
+        <and>
+            <available file="tas/jic/build/build.xml"/>
+            <istrue value="${enable.jic}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-jic"
+            description="Remove all jic build objects from the tree."
+            if="build.jic">
+        <ant dir="tas/jic" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-lib-jic"
+            depends="init"
+            description="Build joz client lib."
+            if="build.jic">
+        <ant dir="tas/jic" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-jic"
+            depends="init"
+            description="Install jic."
+            if="build.jic">
+        <!-- NOTE: This does not depend on `build-joz' ON PURPOSE. -->
+        <ant dir="tas/jic" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-jic"
+            depends="init"
+            description="Build docs for jic."
+            if="build.jic">
+        <ant dir="tas/jic" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-jic"
+            depends="init"
+            description="Install docs for jic."
+            if="build.jic">
+        <!-- NOTE: This does not depend on `build-doc-joz' ON PURPOSE. -->
+        <ant dir="tas/jic" antfile="build/build.xml"
+             target="top-install-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+	<!-- ****************************************************************** -->
+
+    <target name="install-report-jic"
+            depends="init"
+            description="Install docs for jic."
+            if="build.jic">
+        <!-- NOTE: This does not depend on `build-doc-joz' ON PURPOSE. -->
+        <ant dir="tas/jic" antfile="build/build.xml"
+             target="top-install-report" inheritAll="true" inheritRefs="false"/>
+    </target>
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-jic"
+            depends="init"
+            description="Run the jic testsuite."
+            if="build.jic">
+        <ant dir="tas/jic" antfile="build/build.xml"
+             target="top-run-tests" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+</project>

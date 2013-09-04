@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<project name="tumriportal" default="no-default" basedir="..">
+
+    <!-- tumri portal api -->
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.tumriportal">
+        <and>
+            <available file="Java/TumriPortalAPI/build/build.xml"/>
+            <istrue value="${enable.tumriportal}"/>
+        </and>
+    </condition>
+
+    <condition property="copy.dependent">
+    	<istrue value="${enable.tumriportal.copy.dependent}"/>
+    </condition>
+    <!-- ****************************************************************** -->
+
+    <target name="clean-tumriportal"
+            description="Remove all TumriPortal build objects from the tree."
+            if="build.tumriportal">
+        <ant dir="Java/TumriPortalAPI" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-tumriportal"
+            depends="init,build-copy-all-dependent"
+            description="Build TumriPortalAPI."
+            if="build.tumriportal">
+        <ant dir="Java/TumriPortalAPI" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+    
+    <target name="build-copy-all-dependent" depends="build-scc,build-zini-java-api,build-cma,build-mediabuying" if="copy.dependent">
+        <ant dir="Java/TumriPortalAPI" antfile="build/build.xml"
+             target="top-copy-all-dependent" inheritAll="true" inheritRefs="false"/>	
+    </target>
+
+    <!-- ****************************************************************** -->
+
+</project>

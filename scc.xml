@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<project name="scc" default="no-default" basedir="..">
+
+    <!-- scc: service controller console -->
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.scc">
+        <and>
+            <available file="Java/ServiceControllerConsole/build/build.xml"/>
+            <istrue value="${enable.scc}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-scc"
+            description="Remove all service-controller-console build objects from the tree."
+            if="build.scc">
+        <ant dir="Java/ServiceControllerConsole" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-scc"
+            depends="init,build-scapi"
+            description="Build service-controller-console."
+            if="build.scc">
+        <ant dir="Java/ServiceControllerConsole" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-scc"
+            depends="init"
+            description="Install service-controller-console."
+            if="build.scc">
+        <!-- NOTE: This does not depend on `build-scc' ON PURPOSE. -->
+        <ant dir="Java/ServiceControllerConsole" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-scc"
+            depends="init"
+            description="Build docs for service-controller-console."
+            if="build.scc">
+        <ant dir="Java/ServiceControllerConsole" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-scc"
+            depends="init"
+            description="Install docs for service-controller-console."
+            if="build.scc">
+        <!-- NOTE: This does not depend on `build-doc-scc' ON PURPOSE. -->
+        <!-- FIXME: not implemented yet -->
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-scc"
+            depends="init"
+            description="Run the service-controller-console testsuite."
+            if="build.scc">
+	<echo message="no testsuite yet"/>
+    </target>
+
+</project>

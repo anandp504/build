@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<project name="publisher" default="no-default" basedir="..">
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.publisher">
+        <and>
+            <available file="Java/TumriPublisherRegistration/build/build.xml"/>
+            <istrue value="${enable.publisher}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-publisher"
+            description="Remove all publisher console build objects from the tree."
+            if="build.publisher">
+        <ant dir="Java/TumriPublisherRegistration" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <!-- FIXME: This depends on zini-java-api because it is the correct
+         thing to do.  The dependency is not used yet however, we need to
+         stop checking in machine generated files from our own sources.  -->
+
+    <target name="build-publisher"
+            depends="init,build-zini-java-api"
+            description="Build publisher console."
+            if="build.publisher">
+        <ant dir="Java/TumriPublisherRegistration" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-publisher"
+            depends="init"
+            description="Install publisher console."
+            if="build.publisher">
+        <!-- NOTE: This does not depend on `build-publisher' ON PURPOSE. -->
+        <ant dir="Java/TumriPublisherRegistration" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-publisher"
+            depends="init"
+            description="Build docs for publisher console."
+            if="build.publisher">
+        <ant dir="Java/TumriPublisherRegistration" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-publisher"
+            depends="init"
+            description="Install docs for publisher console."
+            if="build.publisher">
+        <!-- NOTE: This does not depend on `build-doc-publisher' ON PURPOSE. -->
+        <!-- FIXME: not implemented yet -->
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-publisher"
+            depends="init"
+            description="Run the publisher console testsuite."
+            if="build.publisher">
+	<echo message="no testsuite yet"/>
+    </target>
+
+</project>

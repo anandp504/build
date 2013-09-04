@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<project name="scapi" default="no-default" basedir="..">
+
+    <!-- scapi: service controller api -->
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.scapi">
+        <and>
+            <available file="Java/ServiceControllerAPI/build/build.xml"/>
+            <istrue value="${enable.scapi}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-scapi"
+            description="Remove all service-controller api build objects from the tree."
+            if="build.scapi">
+        <ant dir="Java/ServiceControllerAPI" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-scapi"
+            depends="init"
+            description="Build service-controller-console."
+            if="build.scapi">
+        <ant dir="Java/ServiceControllerAPI" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-scapi"
+            depends="init"
+            description="Install service-controller-api."
+            if="build.scapi">
+        <!-- NOTE: This does not depend on `build-scapi' ON PURPOSE. -->
+        <!-- FIXME: not implemented yet -->
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-scapi"
+            depends="init"
+            description="Build docs for service-controller-api."
+            if="build.scapi">
+        <ant dir="Java/ServiceControllerAPI" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-scapi"
+            depends="init"
+            description="Install docs for service-controller-api."
+            if="build.scapi">
+        <!-- NOTE: This does not depend on `build-doc-scapi' ON PURPOSE. -->
+        <!-- FIXME: not implemented yet -->
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-scapi"
+            depends="init"
+            description="Run the service-controller-api testsuite."
+            if="build.scapi">
+	<echo message="no testsuite yet"/>
+    </target>
+
+</project>

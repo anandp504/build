@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<project name="icornerstore" default="no-default" basedir="..">
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.icornerstore">
+        <and>
+            <available file="Java/iCornerStore/build/build.xml"/>
+            <istrue value="${enable.icornerstore}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-icornerstore"
+            description="Remove all icornerstore build objects from the tree."
+            if="build.icornerstore">
+        <ant dir="Java/iCornerStore" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-icornerstore"
+            depends="init,build-ats"
+            description="Build icornerstore."
+            if="build.icornerstore">
+        <ant dir="Java/iCornerStore" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-icornerstore"
+            depends="init"
+            description="Install icornerstore."
+            if="build.icornerstore">
+        <!-- NOTE: This does not depend on `build-icornerstore ON PURPOSE. -->
+        <ant dir="Java/iCornerStore" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-icornerstore"
+            depends="init"
+            description="Build docs for icornerstore."
+            if="build.icornerstore">
+        <ant dir="Java/iCornerStore" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-icornerstore"
+            depends="init"
+            description="Install docs for icornerstore."
+            if="build.icornerstore">
+        <!-- NOTE: This does not depend on `build-doc-icornerstore ON PURPOSE. -->
+        <ant dir="Java/iCornerStore" antfile="build/build.xml"
+             target="top-install-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-icornerstore"
+            depends="init"
+            description="Run the icornerstore testsuite."
+            if="build.icornerstore">
+	<echo message="no testsuite yet"/>
+    </target>
+
+</project>

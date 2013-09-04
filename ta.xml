@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<project name="ta" default="no-default" basedir="..">
+
+    <!-- ta: Java version of Soz -->
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.ta">
+        <and>
+            <available file="tas/ta/build/build.xml"/> 
+            <istrue value="${enable.ta}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-ta"
+            description="Remove all ta build objects from the tree."
+            if="build.ta">
+        <ant dir="tas/ta" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-ta"
+            depends="init"
+            description="Build ta."
+            if="build.ta">
+        <ant dir="tas/ta" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-ta"
+            depends="init"
+            description="Install ta."
+            if="build.ta">
+        <!-- NOTE: This does not depend on `build-ta' ON PURPOSE. -->
+        <ant dir="tas/ta" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-ta"
+            depends="init"
+            description="Build docs for ta."
+            if="build.ta">
+        <ant dir="tas/ta" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-ta"
+            depends="init"
+            description="Install docs for ta."
+            if="build.ta">
+        <!-- NOTE: This does not depend on `build-doc-ta' ON PURPOSE. -->
+        <ant dir="tas/ta" antfile="build/build.xml"
+             target="top-install-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-ta"
+            depends="init"
+            description="Run the ta testsuite."
+            if="build.ta">
+        <ant dir="tas/ta" antfile="build/build.xml"
+             target="top-run-tests" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+</project>

@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<project name="logger" default="no-default" basedir="..">
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.logger">
+        <and>
+            <available file="Java/TumriLogger/build/build.xml"/>
+            <istrue value="${enable.logger}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-logger"
+            description="Remove all logger build objects from the tree."
+            if="build.logger">
+        <ant dir="Java/TumriLogger" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-logger"
+            depends="init"
+            description="Build logger."
+            if="build.logger">
+        <ant dir="Java/TumriLogger" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-logger"
+            depends="init"
+            description="Install logger."
+            if="build.logger">
+        <!-- NOTE: This does not depend on `build-logger' ON PURPOSE. -->
+        <ant dir="Java/TumriLogger" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-logger"
+            depends="init"
+            description="Build docs for logger."
+            if="build.logger">
+        <ant dir="Java/TumriLogger" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-logger"
+            depends="init"
+            description="Install docs for logger."
+            if="build.logger">
+        <!-- NOTE: This does not depend on `build-doc-logger' ON PURPOSE. -->
+        <ant dir="Java/TumriLogger" antfile="build/build.xml"
+             target="top-install-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-logger"
+            depends="init"
+            description="Run the logger testsuite."
+            if="build.logger">
+	<echo message="no testsuite yet"/>
+    </target>
+
+</project>

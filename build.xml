@@ -1,0 +1,1238 @@
+<?xml version="1.0"?>
+<project name="tumri" default="no-default" basedir="..">
+
+    <!--
+        WARNING: It is critical that properties only used within this file
+        not collide with any subdir's properties.  To achieve this:
+        - don't willy-nilly add properties to this file
+        - if there is a risk of collision, prefix it with "top."
+
+        WARNING: It is critical that any properties containing paths that
+        are to be used by subdirs have absolute pathnames.  OTOH, except
+        in buildconf.properties, don't hardwire absolute paths, construct
+        them on the fly.
+        -->
+
+    <!-- TODO: Use of "parallel" to achieve parallel builds.  -->
+
+    <property name="top.root.dir" value="."/>
+
+    <!-- This is the property file that is copied to buildconf.properties
+             during the configure step.  A different file may be specified by
+             overriding this parameter on the command line during the
+             configure step.
+             NOTE: This is not prefixed with "top." on purpose.  -->
+    <property name="with.buildconf.properties"
+              value="${top.root.dir}/build/default.buildconf.properties"/>
+
+    <!-- This property file is created during the configure step.  -->
+    <property name="top.buildconf.properties"
+              value="${top.root.dir}/buildconf.properties"/>
+
+    <!-- This property file contains various parameters that in general
+             DO NOT change.  We don't load the properties here to stay consistent
+             with subdirs which must load it after buildconf.properties, and we
+             load the latter below.  -->
+    <property name="top.build.properties"
+              value="${top.root.dir}/build/build.properties"/>
+
+    <!-- NOTE: buildconf.properties must be loaded early.  For example, it
+             contains the enable flags used by the package .xml files, and
+             `import' can only be done as a top level task.  The catch is that
+             until we have configured the tree, buildconf.properties doesn't exist
+             yet.  To cope with this, we have an initial properties file that we
+             load if buildconf.properties doesn't exist, and we have the
+             load-config target verify buildconf.properties exists.  Blech.
+             Remind me again why Ant is so wonderful?  -->
+    <property name="top.initial.buildconf.properties"
+              value="${top.root.dir}/build/initial.buildconf.properties"/>
+    <condition property="top.buildconf.to.load"
+               value="${top.buildconf.properties}"
+               else="${top.initial.buildconf.properties}">
+        <available file="${top.buildconf.properties}"/>
+    </condition>
+    <loadproperties srcFile="${top.buildconf.to.load}"/>
+
+    <!-- ****************************************************************** -->
+
+    <!-- Each subproject that this file manages has top-clean,top-build,
+             top-install targets defined in its own file.
+             NOTE: Package .xml files cannot be imported until after we import
+             buildconf.properties.
+         NOTE: Package .xml files are listed here alphabetically on purpose.
+         Keep it that way.  -->
+
+    <import file="widget.xml"/>     <!-- Widgets -->
+    <import file="advertiser.xml"/>
+    <import file="ats.xml"/> <!-- affiliate tracking system -->
+    <import file="cma.xml"/>
+    <import file="mediabuying.xml"/>
+    <import file="caa.xml"/><!-- content access api -->
+    <import file="lls.xml"/>
+    <import file="buildui.xml"/>
+    <import file="pxl.xml"/>
+    <import file="icornerstore.xml"/>
+    <import file="joz.xml"/> <!-- java version of soz -->
+    <import file="ta.xml"/>
+    <import file="tcm.xml"/> <!-- Tumri Internal Portal -->
+    <import file="trs.xml"/> <!-- Tumri Analytical Reports -->
+    <import file="cbo.xml"/> <!-- Collective Bid Optimization -->
+    <import file="tlp.xml"/>
+    <import file="logger.xml"/>
+    <import file="publisher.xml"/>
+    <import file="scapi.xml"/>
+    <import file="scc.xml"/> <!-- service controller console -->
+    <import file="wac.xml"/>
+    <import file="tca.xml"/>
+    <import file="soz.xml"/>
+    <import file="tas-utils.xml"/>
+    <import file="tas-sso.xml"/>
+    <import file="tmc.xml"/> <!-- tspec management console -->
+    <import file="qac.xml"/> <!--  quality assurance console -->
+    <import file="lp.xml"/> <!-- Listing Platform (LP) (aka CP) -->
+    <import file="zini-java-api.xml"/>
+    <import file="tumriportal.xml"/>
+    <import file="jcl.xml"/>
+    <import file="jic.xml"/>
+    <import file="llc.xml"/>
+    <import file="webutils.xml"/>
+    <import file="cof.xml"/>
+    <import file="lca.xml"/>
+    <import file="adp.xml"/>
+    <import file="tm.xml"/>
+    <import file="tc.xml"/> <!-- Tumri Campaigner Porl -->
+    <import file="igs.xml"/><!-- Image Generation Server -->
+    <import file="pb.xml"/>
+    <import file="pdlp.xml"/>
+
+    <!-- ****************************************************************** -->
+
+    <target name="no-default">
+        <fail message="There is no default rule.  Run `ant -f build/build.xml -p' to see the list of commands."/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="load-config">
+        <fail message="Must configure tree first.">
+            <condition>
+                <not> <available file="${top.buildconf.properties}"/> </not>
+            </condition>
+        </fail>
+        <!-- NOTE: There is no need to load buildconf.properties here,
+                     it has already been done.  See above.  -->
+        <loadproperties srcFile="${top.build.properties}"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <!-- internal use target to perform various initializations -->
+    <target name="init"
+            depends="load-config">
+   </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="ensure-not-configured">
+        <fail message="Tree already configured.">
+            <condition>
+                <available file="${top.buildconf.properties}"/>
+            </condition>
+        </fail>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <!-- This is run once to create buildconf.properties which specifies
+             various properties about the build.  This copies
+             ${with.buildconf.properties} to ${top.buildconf.properties}.
+             The file used can be overridden by specifying
+             -Dwith.buildconf.properties=/path/to/your.buildconf.properties
+             when you run `ant configure'.  It need not be specified if the
+             default values work for you.
+
+             WARNING: DO NOT check in a file named ${top.buildconf.properties}.
+             That defeats the whole point of having a configure step.  -->
+
+    <target name="configure"
+            depends="ensure-not-configured"
+            description="Configure the tree, typically specifying the build properties file.  See all configure options with `ant help-config'.">
+
+        <!-- This is redundant with the above ensure-not-configured
+                     dependency.  It is here for robustness' sake.  -->
+        <delete file="${top.buildconf.properties}"/>
+
+        <copy file="${with.buildconf.properties}" tofile="${top.buildconf.properties}"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="help-config"
+            description="Print list of options to `configure' target.">
+        <echo message="Currently specifiable configuration options are:"/>
+        <echo/>
+        <echo message="-Dwith.buildconf.properties=/path/to/your.buildconf.properties"/>
+        <echo/>
+        <echo message="See ${with.buildconf.properties} for boilerplate"/>
+        <echo message="for what to put in your.buildconf.properties."/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean"
+            depends="init"
+            description="Remove all build objects from the tree.">
+        <!-- NOTE: This invokes the commands inline instead of listing them as
+                     a dependency ON PURPOSE.  It makes diffs more readable when things
+                     get added/deleted.
+                 NOTE: Package .xml files are listed here alphabetically on
+                 purpose.  Keep it that way.  -->
+        <parallel>
+            <antcall target="clean-widget"/>
+            <antcall target="clean-advertiser"/>
+            <antcall target="clean-ats"/>
+            <antcall target="clean-cma"/>
+            <antcall target="clean-mediabuying"/>
+            <antcall target="clean-caa"/>
+            <antcall target="clean-lls"/>
+            <antcall target="clean-buildui"/>
+            <antcall target="clean-pxl"/>
+            <antcall target="clean-icornerstore"/>
+            <antcall target="clean-joz"/>
+            <antcall target="clean-ta"/>
+            <antcall target="clean-tcm"/>
+            <antcall target="clean-trs"/>
+            <antcall target="clean-cbo"/>
+            <antcall target="clean-tlp"/>
+            <antcall target="clean-logger"/>
+            <antcall target="clean-publisher"/>
+            <antcall target="clean-scapi"/>
+            <antcall target="clean-scc"/>
+            <antcall target="clean-wac"/>
+            <antcall target="clean-tca"/>
+            <antcall target="clean-soz"/>
+            <antcall target="clean-tas-utils"/>
+            <antcall target="clean-tas-sso"/>
+            <antcall target="clean-webutils"/>
+            <antcall target="clean-tmc"/>
+            <antcall target="clean-qac"/>
+            <antcall target="clean-lp"/>
+            <antcall target="clean-zini-java-api"/>
+            <antcall target="clean-tumriportal"/>
+            <antcall target="clean-cof"/>
+            <antcall target="clean-lca"/>
+            <antcall target="clean-tc"/>
+            <antcall target="clean-igs"/>
+            <antcall target="clean-pb"/>
+            <antcall target="clean-pdlp"/>
+        </parallel>
+        <delete dir="${top.root.dir}/package"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="distclean"
+            description="Remove all build files and all config files from the tree.  After this rule is run there should be no non-checked-in files in the tree (except for any locally created).">
+        <!-- If buildconf.properties doesn't exist, temporarily create a
+                     dummy file so cleaning in subdirs works; they may require the
+                     file to exist in order to process the "clean" (which is ok).  -->
+        <touch file="${top.buildconf.properties}"/>
+        <antcall target="clean"/>
+        <delete file="${top.buildconf.properties}"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <!-- NOTE: dependencies are listed in the `depends' section so that ant
+             can notice that it only needs to build a package once, regardless of
+             how many times it appears in other packages dependencies.  -->
+    <!-- ??? The dependencies are listed in alphabetical order, not that it
+             really helps much here - is it possible/reasonable to still list them
+             one per line?  -->
+    <target name="build"
+            depends="init,buildinit,build-widget,build-advertiser,build-ats,build-cma,build-mediabuying,build-caa,build-lls,build-buildui,build-pxl,build-joz,build-ta,build-tlp,build-logger,build-icornerstore,build-publisher,build-scapi,build-scc,build-wac,build-tca,build-soz,build-tas-utils,build-tas-sso,build-webutils,build-tmc,build-qac,build-tcm,build-lp,build-zini-java-api,build-tumriportal,build-cof,build-lca,build-trs,build-cbo,build-tc"
+            description="Build everything in the currently checked out tree.">
+        <antcall target="package"> </antcall>
+    </target>
+
+    <!-- *********************************Individual Component Build targets ********************************* -->
+    <target name="package-widget" depends="build-widget">
+        <property name="package.widget" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-widget">
+            <param name="component" value="widget"/>
+            <param name="component.src.dir" value="${top.root.dir}/Java/Widgets/dist/packages/zipfiles"/>
+        </antcall>
+    </target>
+    <!-- ********************** -->
+    <target name="package-buildui" depends="init,buildinit,build-buildui">
+        <property name="package.buildui" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="buildui"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/buildtools/build/buildui_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/buildtools/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/buildtools/dist/package"/>
+        </antcall>
+    </target>
+    <!-- ********************** -->
+    <target name="package-pxl" depends="init,buildinit,build-pxl">
+        <property name="package.pxl" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="pxl"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/pxl/build/pxl_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/pxl/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/pxl/dist/package"/>
+        </antcall>
+    </target>
+    <!-- ********************** -->
+    <target name="package-lls" depends="init,buildinit,build-lls">
+        <property name="package.lls" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="lls"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/lls/build/lls_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/lls/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/lls/dist/package"/>
+        </antcall>
+    </target>
+    <!-- ********************** -->
+    <target name="package-wac" depends="init,buildinit,build-wac">
+        <property name="package.wac" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="wac"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/wac/build/wac_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/wac/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/wac/dist/package"/>
+        </antcall>
+    </target>
+    <!-- ********************** -->
+    <target name="package-tca" depends="init,buildinit,build-tca">
+        <property name="package.tca" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="tca"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/tca/build/tca_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/tca/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/tca/dist/package"/>
+        </antcall>
+    </target>
+    <!-- ********************** -->
+    <target name="package-joz" depends="init,buildinit,build-joz">
+        <property name="package.joz" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="joz"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/joz/build/joz_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/joz/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/joz/dist/package"/>
+        </antcall>
+    </target>
+
+    <!-- ********************** -->
+    <target name="package-lca" depends="init,buildinit,build-lca">
+        <property name="package.lca" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="lca"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/lca/build/version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/lca/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/lca/dist/package"/>
+        </antcall>
+    </target>
+
+    <!-- ********************** -->
+    <target name="package-ta" depends="init,buildinit,build-ta">
+        <property name="package.ta" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="ta"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/ta/build/version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/ta/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/ta/dist/package"/>
+        </antcall>
+    </target>
+
+    <!-- ********************** -->
+    <target name="package-pb" depends="init,buildinit,build-cma,build-ta,build-pb">
+ 
+        <!-- Copy ta jar and libs -->
+        <copy todir="${top.root.dir}/tas/pb/lib">
+            <fileset dir="${top.root.dir}/tas/ta/dist" includes="ta.jar" />
+            <fileset dir="${top.root.dir}/tas/cma/stage/dist" includes="cma.jar" />
+            <fileset dir="${top.root.dir}/tas/ext/lib/java" includes="*.jar" />
+            <fileset dir="${top.root.dir}/tas/int/lib/utils" includes="utils_3.0.0.33.jar" />
+            <fileset dir="${top.root.dir}/../dev/branch/LogDataGenerator/lib" includes="groovy-all-1.5.7.jar" />
+            <fileset dir="${top.root.dir}/../dev/branch/LogDataGenerator/lib" includes="groovytools-builder-1.1.4.jar" />
+        </copy>
+        <antcall target="copy-package">
+            <param name="component" value="pb"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/pb/build/version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/pb/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/pb/dist/package"/>
+        </antcall>
+   
+    </target>
+
+    <!-- ********************** -->
+    <target name="package-cof" depends="init,buildinit,build-cof">
+        <property name="package.cof" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="cof"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/cof/build/version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/cof/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/cof/dist/package"/>
+        </antcall>
+    </target>
+
+    <!-- ********************** -->
+
+    <target name="package-ics" depends="init,buildinit,build-ats, build-logger, build-icornerstore">
+        <property name="package.ics" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+	 <antcall target="copy-package">
+            <param name="component" value="ics"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="tomcat.version" value="tomcat7"/>
+	    <param name="component.version.properties"
+                   value="${top.root.dir}/Java/iCornerStore/build/build.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/Java/iCornerStore/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/Java/iCornerStore/dist/package"/>
+        </antcall>
+    </target>
+
+    <!-- ********************** -->
+    <target name="package-qac" depends="init,buildinit,build-qac">
+        <property name="package.qac" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="qac"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties"
+                   value="${top.root.dir}/Java/TSpecManager/build/qac_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/Java/TSpecManager/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/Java/TSpecManager/qac_dist/package"/>
+        </antcall>
+    </target>
+
+    <!-- ********************** -->
+    <target name="package-tmc" depends="init,buildinit,build-tmc">
+        <property name="package.tmc" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="tmc"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties"
+                   value="${top.root.dir}/Java/TSpecManager/build/tmc_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/Java/TSpecManager/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/Java/TSpecManager/tmc_dist/package"/>
+        </antcall>
+    </target>
+
+    <!-- ********************** -->
+    <target name="package-tcm" depends="init,buildinit,build-tcm">
+        <property name="package.tcm" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <loadproperties srcfile="${top.root.dir}/tas/tip/build/build.properties"/>
+        <property name="include.terracotta.client" value="${enable.caching}"/>
+        <antcall target="copy-package">
+            <param name="component" value="tcm"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/tip/build/tcm_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/tip/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/tip/dist/package"/>
+        </antcall>
+    </target>
+
+    <!-- ********************** -->
+    <target name="package-trs" depends="init,buildinit,build-trs">
+        <property name="package.trs" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="trs"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="tomcat.version" value="tomcat7"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/trs/build/trs_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/trs/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/trs/dist/package"/>
+        </antcall>
+    </target>
+
+    <!-- ********************** -->
+    <target name="package-cbo" depends="init,buildinit,build-cbo">
+        <property name="package.cbo" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="cbo"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="tomcat.version" value="tomcat7"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/cbo/build/cbo_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/cbo/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/cbo/dist/package"/>
+        </antcall>
+    </target>
+    
+    
+    <!-- ********************** -->
+    <target name="package-tc" depends="init,buildinit,build-tc">
+        <property name="package.tc" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <loadproperties srcfile="${top.root.dir}/tas/tc/build/build.properties"/>
+        <property name="include.terracotta.client" value="${enable.caching}"/>
+        <antcall target="copy-package">
+            <param name="component" value="tc"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="tomcat.version" value="tomcat7"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/tc/build/tc_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/tc/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/tc/dist/package"/>
+        </antcall>
+    </target>
+    
+    <!-- ********************** -->
+        <target name="package-igs" depends="init,buildinit,build-igs">
+            <property name="package.igs" value="true"/>
+            <property name="package.dir" value="${top.root.dir}/package"/>
+            <antcall target="copy-package">
+                <param name="component" value="igs"/>
+                <param name="enable.tomcat" value="true"/>
+                <param name="component.version.properties" value="${top.root.dir}/tas/igs/build/igs_version.properties"/>
+                <param name="component.build.properties" value="${top.root.dir}/tas/igs/build/build.properties"/>
+                <param name="component.src.dir" value="${top.root.dir}/tas/igs/dist/package"/>
+            </antcall>
+    </target>
+    
+    <!-- ********************** -->
+	<target name="package-lp" depends="init,buildinit,build-lp">
+        <property name="package.lp" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>      
+        <antcall target="copy-package">
+            <param name="component" value="lp"/>
+            <param name="enable.tomcat" value="true"/>
+	        <param name="tomcat.version" value="tomcat7"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/cp/build/lp_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/cp/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/cp/dist/package"/>
+        </antcall>
+    </target>
+
+    <!-- ********************** -->
+    <target name="package-tlp" depends="init,buildinit,build-tlp">
+        <property name="package.tlp" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <antcall target="copy-package">
+            <param name="component" value="tlp"/>
+            <param name="enable.tomcat" value="false"/>
+            <param name="component.version.properties" value="${top.root.dir}/Java/TumriLogProcessor/build/tlp_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/Java/TumriLogProcessor/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/Java/TumriLogProcessor/dist/"/>
+        </antcall>
+    </target>
+
+    <!-- *********************** -->
+    <target name="package-adp" depends="init,buildinit,build-adp">
+        <property name="package.adp" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>      
+        <antcall target="copy-package">
+            <param name="component" value="adp"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/adp/build/adp_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/adp/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/adp/dist/package"/>
+        </antcall>
+    </target>
+
+    <!-- ********************** -->
+    <target name="package-terracotta-server" depends="">
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <!-- Create top directory under package -->
+        <property name="package.name" value="terracotta-server"/>
+        <property name="package.target.dir" value="${package.dir}/${package.name}"/>
+        <property name="terracotta.server.src.dir" value="${top.root.dir}/tas/terracotta-server"/>
+        <loadproperties srcfile="${terracotta.server.src.dir}/build/terracotta-server_version.properties"/>
+        <loadproperties srcfile="${terracotta.server.src.dir}/install.properties"/>
+        <mkdir dir="${package.target.dir}"/>
+
+        <!-- Copy over top-level installation script. -->
+        <copy file="${top.root.dir}/install/build.xml" todir="${package.target.dir}" preservelastmodified="true" overwrite="true"/>
+        <copy file="${top.root.dir}/install/build.properties" todir="${package.target.dir}" preservelastmodified="true" overwrite="true"/>
+        
+        <!-- Copy terracotta server files to package dir -->
+        <copy todir="${package.target.dir}" preservelastmodified="true" overwrite="true">
+            <fileset file="${terracotta.server.src.dir}/${terracotta.server.filename.src}"/>
+            <fileset file="${terracotta.server.src.dir}/install.*"/>
+            <fileset file="${terracotta.server.src.dir}/bin/terracotta-server" />
+            <fileset file="${terracotta.server.src.dir}/local.properties" />
+        </copy>
+
+        <!-- copy the terracotta config file -->
+        <copy file="${top.root.dir}/tas/ext/binary/terracotta/config/${terracotta.server.config.file}" todir="${package.target.dir}" />
+
+        <!-- replace the version token with build version -->
+        <replace file="${package.target.dir}/install.properties">
+            <replacefilter token="@version@" value="${build_version}" />
+        </replace>
+
+        <!-- Create a single file package -->
+        <property name="package.file.name" value="${component.product.name}"/>
+        <tar tarfile="${package.dir}/${package.file.name}.tar" basedir="${package.target.dir}"/>
+        <gzip zipfile="${package.dir}/${package.file.name}.tar.gz" src="${package.dir}/${package.file.name}.tar"/>
+        <delete file="${package.dir}/${package.file.name}.tar"/>
+        <delete dir="${package.target.dir}"/>
+    </target>
+
+    <!-- ********************** -->
+    <target name="package-pdlp" depends="build-pdlp">
+        <property name="package.pdlp" value="true"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+        <property name="package.name" value="pdlp"/>
+        <property file="${top.root.dir}/tas/pdlp/build/pdlp_version.properties"/>
+        <property file="${top.root.dir}/tas/pdlp/build/build.properties"/>
+
+        <!-- Create top directory under package -->
+        <property name="package.target.dir" value="${package.dir}/${package.name}"/>
+        <mkdir dir="${package.target.dir}"/>
+
+        <!-- Package Akka server in the component's package directory -->
+        <antcall target="copy-akka-server">
+            <param name="package.target.dir" value="${package.target.dir}"/>
+            <param name="akka.server.src.filename" value="${akka.server.src.filename}"/>
+            <param name="akka.server.src.dir" value="${top.root.dir}/${akka.server.src.dir}"/>
+        </antcall>
+
+        <!-- Copy over top-level installation script. -->
+        <copy file="${top.root.dir}/install/build.xml" todir="${package.target.dir}" preservelastmodified="true" overwrite="true"/>
+        <copy file="${top.root.dir}/install/build.properties" todir="${package.target.dir}" preservelastmodified="true" overwrite="true"/>
+
+        <mkdir dir="${package.target.dir}/${package.name}"/>
+        <!-- Copy over the component's package -->
+        <copy file="${top.root.dir}/${component.src.dir}/target/pdlp_${build_version}.jar"
+              toFile="${package.target.dir}/${package.name}/pdlp_${build_version}.jar"/>
+
+        <copy todir="${package.target.dir}/${package.name}" preservelastmodified="true" overwrite="true">
+            <fileset dir="${top.root.dir}/${component.src.dir}/install">
+                <include name="**/*"/>
+            </fileset>
+        </copy>
+
+        <replace file="${package.target.dir}/${package.name}/install.properties">
+            <replacefilter token="@version@" value="${build_version}" />
+        </replace>
+
+        <!-- Copy the config files to be used -->
+        <mkdir dir="${package.target.dir}/${package.name}/conf"/>
+        <copy todir="${package.target.dir}/${package.name}/conf" preservelastmodified="true" overwrite="true">
+            <fileset dir="${top.root.dir}/${component.conf.dir}">
+                <include name="**/*" />
+            </fileset>
+        </copy>
+
+        <!-- Copy the required lib files -->
+        <mkdir dir="${package.target.dir}/${package.name}/lib"/>
+        <copy todir="${package.target.dir}/${package.name}/lib" preservelastmodified="true" overwrite="true">
+            <fileset dir="${top.root.dir}/tas/pdlp/${ext.lib.pdlp.extra.dir}">
+                <include name="**/*.jar" />
+            </fileset>
+
+            <fileset dir="${top.root.dir}/tas/pdlp/${ext.lib.uql.dir}">
+                <include name="**/*.jar" />
+                <exclude name="slf4j-log4j12-1.6.6.jar" />
+                <exclude name="commons-io-2.1.jar" />
+                <exclude name="aws-java-sdk-1.3.13.jar" />
+            </fileset>
+
+            <fileset dir="${top.root.dir}/tas/pdlp/${ext.lib.aws.sdk.dir}">
+                <include name="${ext.lib.aws.sdk.lib}" />
+            </fileset>
+
+            <fileset dir="${top.root.dir}/tas/pdlp/${ehcache.lib.dir}">
+                <include name="**/*.jar" />
+            </fileset>
+        </copy>
+
+        <copy todir="${package.target.dir}/${package.name}/lib/uql" preservelastmodified="true" overwrite="true">
+            <fileset dir="${top.root.dir}/${component.src.dir}/${uql.lib.dir}">
+                <include name="${uql.common.jar}" />
+                <include name="${uql.dynamo.jar}" />
+                <include name="${uql.management.jar}" />
+            </fileset>
+        </copy>
+
+        <copy todir="${package.target.dir}/${package.name}/lib/webutils" preservelastmodified="true" overwrite="true">
+            <fileset dir="${top.root.dir}/${component.src.dir}/${webutils.lib.dir}">
+                <include name="${webutils.lib.file}" />
+            </fileset>
+        </copy>
+
+        <!-- Create a single file package -->
+        <tar tarfile="${package.dir}/${package.name}.tar" basedir="${package.target.dir}"/>
+        <gzip zipfile="${package.dir}/${package.name}.tar.gz" src="${package.dir}/${package.name}.tar"/>
+        <delete file="${package.dir}/${package.name}.tar"/>
+        <delete dir="${package.target.dir}"/>
+    </target>
+
+    <!-- ********************** -->
+    <target name="package"
+            depends=""
+            description="Create a top-level package of all selected components.">
+        <delete dir="${top.root.dir}/package"/>
+        <property name="package.dir" value="${top.root.dir}/package"/>
+
+        <!-- ********************** -->
+        <condition property="package.widget">
+            <and> <istrue value="${enable.widget}"/> </and>
+        </condition>
+        <antcall target="copy-widget">
+            <param name="component" value="widget"/>
+            <param name="component.src.dir" value="${top.root.dir}/Java/Widgets/dist/packages/zipfiles"/>
+        </antcall>
+
+        <!-- ********************** -->
+        <condition property="package.lls">
+            <and> <istrue value="${enable.lls}"/> </and>
+        </condition>
+        <antcall target="copy-package">
+            <param name="component" value="lls"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/lls/build/lls_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/lls/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/lls/dist/package"/>
+        </antcall>
+        <!-- ********************** -->
+        <condition property="package.wac">
+            <and> <istrue value="${enable.wac}"/> </and>
+        </condition>
+        <antcall target="copy-package">
+            <param name="component" value="wac"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/wac/build/wac_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/wac/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/wac/dist/package"/>
+        </antcall>
+
+        <!-- ********************** -->
+        <condition property="package.tca">
+            <and> <istrue value="${enable.tca}"/> </and>
+        </condition>
+        <antcall target="copy-package">
+            <param name="component" value="tca"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/tca/build/tca_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/tca/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/tca/dist/package"/>
+        </antcall>
+
+        <!-- ********************** -->
+        <condition property="package.pxl">
+            <and> <istrue value="${enable.pxl}"/> </and>
+        </condition>
+        <antcall target="copy-package">
+            <param name="component" value="pxl"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/pxl/build/pxl_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/pxl/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/pxl/dist/package"/>
+        </antcall>
+        <!-- ********************** -->
+        <condition property="package.joz">
+            <and> <istrue value="${enable.joz}"/> </and>
+        </condition>
+        <antcall target="copy-package">
+            <param name="component" value="joz"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/joz/build/joz_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/joz/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/joz/dist/package"/>
+        </antcall>
+
+        <!-- ********************** -->
+        <condition property="package.lca">
+            <and> <istrue value="${enable.lca}"/> </and>
+        </condition>
+        <antcall target="copy-package">
+            <param name="component" value="lca"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/lca/build/version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/lca/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/lca/dist/package"/>
+        </antcall>
+
+        <!-- ********************** -->
+        <condition property="package.ta">
+            <and> <istrue value="${enable.ta}"/> </and>
+        </condition>
+        <antcall target="copy-package">
+            <param name="component" value="ta"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/ta/build/version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/ta/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/ta/dist/package"/>
+        </antcall>
+
+        <!-- ********************** -->
+        <condition property="package.cof">
+            <and> <istrue value="${enable.cof}"/> </and>
+        </condition>
+        <antcall target="copy-package">
+            <param name="component" value="cof"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/cof/build/version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/cof/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/cof/dist/package"/>
+        </antcall>
+
+        <!-- ********************** -->
+
+        <condition property="package.ics">
+            <and> <istrue value="${enable.icornerstore}"/> </and>
+        </condition>
+        <antcall target="copy-package">
+            <param name="component" value="ics"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/Java/iCornerStore/build/build.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/Java/iCornerStore/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/Java/iCornerStore/dist/package"/>
+        </antcall>
+
+        <!-- ********************** -->
+        <condition property="package.qac">
+            <and> <istrue value="${enable.qac}"/> </and>
+        </condition>
+        <antcall target="copy-package">
+            <param name="component" value="qac"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/Java/TSpecManager/build/qac_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/Java/TSpecManager/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/Java/TSpecManager/qac_dist/package"/>
+        </antcall>
+
+        <!-- ********************** -->
+        <condition property="package.tmc">
+            <and> <istrue value="${enable.tmc}"/> </and>
+        </condition>
+        <antcall target="copy-package">
+            <param name="component" value="tmc"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/Java/TSpecManager/build/tmc_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/Java/TSpecManager/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/Java/TSpecManager/tmc_dist/package"/>
+        </antcall>
+
+        <!-- ********************** -->
+        <condition property="package.tcm">
+            <and> <istrue value="${enable.tcm}"/> </and>
+        </condition>
+        <antcall target="copy-package">
+            <param name="component" value="tcm"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/tip/build/tcm_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/tip/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/tip/dist/package"/>
+        </antcall>
+
+        <!-- ********************** -->
+        <condition property="package.lp">
+            <and> <istrue value="${enable.lp}"/> </and>
+        </condition>
+        <!-- JMN - Workaround to relocate LP database files -->
+        <mkdir dir="${package.dir}/lp/lp-db"/>
+        <untar src="${top.root.dir}/tas/cp/dist/db-package/db-package.tar.gz" dest="${package.dir}/lp/lp-db"
+               compression="gzip"/>
+        <antcall target="copy-package">
+            <param name="component" value="lp"/>
+            <param name="enable.tomcat" value="true"/>
+            <param name="component.version.properties" value="${top.root.dir}/tas/cp/build/lp_version.properties"/>
+            <param name="component.build.properties" value="${top.root.dir}/tas/cp/build/build.properties"/>
+            <param name="component.src.dir" value="${top.root.dir}/tas/cp/dist/package"/>
+        </antcall>
+    </target>
+
+    <!-- ****************************************************************** -->
+    <!-- Input parameters being passed on:
+        <param name="component" value="${component}"/>  (widget in this case)
+        <param name="component.src.dir" value="${top.root.dir}/Java/Widgets/dist/packages/zipfiles"/>
+    -->
+    <target name="copy-widget" if="package.${component}">
+        <!-- Create widget directory under top package -->
+        <property name="package.name" value="${component}"/>
+        <property name="package.target.dir" value="${package.dir}/${component}"/>
+        <mkdir dir="${package.target.dir}"/>
+
+        <!-- Copy over the component's package -->
+        <copy todir="${package.target.dir}" preservelastmodified="true" overwrite="true">
+            <fileset file="${component.src.dir}/**"/>
+        </copy>
+    </target>
+
+    <!-- ****************************************************************** -->
+    <!-- Input parameters being passed on:
+        <param name="component" value="${component}"/>  (Example: lls, joz, etc.)
+        <param name="enable.tomcat" value="true"/>
+        <param name="component.version.properties" value="${top.root.dir}/tas/lls/build/lls_version.properties"/>
+        <param name="component.build.properties" value="${top.root.dir}/tas/lls/build/build.properties"/>
+        <param name="component.src.dir" value="${top.root.dir}/tas/lls/dist/package"/>
+    -->
+    <target name="copy-package" if="package.${component}">
+        <!--
+          <property name="component.version.properties" value="${component.version.properties}"/>
+          <property name="component.build.properties" value="${component.build.properties}"/>
+          <condition property="component.properties.to.load"
+                  value="${component.version.properties}"
+                  else="${component.build.properties}">
+                  <available file="${component.version.properties}"/>
+          </condition>
+          <loadproperties srcFile="${component.properties.to.load}"/>
+  -->
+
+        <!-- Create top directory under package -->
+        <property name="package.name" value="${component}"/>
+        <property name="package.target.dir" value="${package.dir}/${component}"/>
+        <echo message="package.target.dir=${package.target.dir}" />
+	<mkdir dir="${package.target.dir}"/>
+
+        <!-- Copy tomcat package to the correct path. -->
+        <property name="tomcat.target.dir" value="${package.target.dir}"/>
+        <condition property="tomcat.src.dir" value="${tomcat.version}">
+            <isset property="tomcat.version"/>
+        </condition>
+        <condition property="tomcat.ext.dir" value="${tomcat.version}">
+            <isset property="tomcat.version"/>
+        </condition>
+
+        <!-- Because the property is immutable, if it is set in the previous condition, it would not be reset below -->
+        <property name="tomcat.src.dir" value="tomcat5"/>
+        <property name="tomcat.ext.dir" value="tomcat"/>
+        <property name="tomcat.version" value="tomcat5"/>
+
+        <!-- Copy over the component's package -->
+        <copy todir="${package.target.dir}/${component}" preservelastmodified="true" overwrite="true">
+            <fileset dir="${component.src.dir}"/>
+        </copy>
+
+        <property name="tomcat.target.name" value="copy-tomcat"/>
+
+        <!-- Copy over tomcat (if required) -->
+        <!-- <antcall target="copy-tomcat"> -->
+        <antcall target="${tomcat.target.name}">
+            <param name="package.tomcat" value="${enable.tomcat}"/>
+            <param name="package.target.dir" value="${package.target.dir}"/>
+        </antcall>
+
+        <copy file="${top.root.dir}/install/build.xml" todir="${package.target.dir}" preservelastmodified="true" overwrite="true"/>
+        <copy file="${top.root.dir}/install/build.properties" todir="${package.target.dir}"
+              preservelastmodified="true" overwrite="true">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </copy>
+
+        <!-- Copy over terracotta client (if required) -->
+        <antcall target="copy-terracotta-client">
+            <param name="package.terracotta.client" value="${include.terracotta.client}"/>
+            <param name="package.target.dir" value="${package.target.dir}"/>
+        </antcall>
+
+        <!-- package TCA if required -->
+        <antcall target="copy-tca-artifacts" />
+
+        <!-- Create a single file package -->
+        <tar tarfile="${package.dir}/${package.name}.tar" basedir="${package.target.dir}"/>
+        <gzip zipfile="${package.dir}/${package.name}.tar.gz" src="${package.dir}/${package.name}.tar"/>
+        <delete file="${package.dir}/${package.name}.tar"/>
+        <delete dir="${package.target.dir}"/>
+
+    </target>
+
+    <!-- ****************************************************************** -->
+    <!-- Input parameter(s) being passed on:
+        <param name="package.tomcat" value="${enable.tomcat}"/>
+            (true to copy tomcat unless otherwise.)
+        <param name="package.target.dir" value="${package.target.dir}"/>
+    -->
+    <target name="check-copy-tomcat-required">
+        <condition property="copy.tomcat.required" value="true">
+            <equals arg1="${package.tomcat}" arg2="true" casesensitive="false" trim="true"/>
+        </condition>
+    </target>
+    <target name="copy-tomcat" depends="check-copy-tomcat-required" if="copy.tomcat.required">
+        <!-- Copy tomcat package to the correct path. -->
+        <mkdir dir="${tomcat.target.dir}/${tomcat.src.dir}"/>
+        <copy todir="${tomcat.target.dir}/${tomcat.src.dir}" preservelastmodified="true" overwrite="true">
+            <fileset dir="${top.root.dir}/tas/ext/binary/${tomcat.ext.dir}"/>
+        </copy>
+    </target>
+    
+    <!-- ****************************************************************** -->
+
+    <!-- ****************************************************************** -->
+    <!-- Input parameter(s) being passed on:
+        <param name="package.tomcat" value="${enable.tomcat}"/>
+            (true to copy tomcat unless otherwise.)
+        <param name="package.target.dir" value="${package.target.dir}"/>
+    -->
+    <target name="check-terracotta-client-required">
+        <condition property="terracotta.client.required" value="true">
+            <equals arg1="${package.terracotta.client}" arg2="true" casesensitive="false" trim="true"/>
+        </condition>
+    </target>
+
+    <target name="copy-terracotta-client" depends="check-terracotta-client-required" if="terracotta.client.required">
+        <!-- Copy terracotta client to the correct path. -->
+        <property name="terracotta.client.target.dir" value="${package.target.dir}"/>
+        <mkdir dir="${terracotta.client.target.dir}/terracotta-client"/>
+        <copy todir="${terracotta.client.target.dir}/terracotta-client" preservelastmodified="true" overwrite="true">
+            <fileset dir="${top.root.dir}/tas/ext/binary/terracotta/client"/>
+        </copy>
+    </target>
+
+    <!-- ****************************************************************** -->
+    <target name="check-package-tca-war">
+        <condition property="package.tca.war" value="true">
+            <equals arg1="${include.tca}" arg2="true" casesensitive="false" trim="true"/>
+        </condition>
+    </target>
+
+    <target name="copy-tca-artifacts" depends="check-package-tca-war" if="package.tca.war">
+        <property name="tca.target.dir" value="${package.target.dir}"/>
+        <!-- Copy the tca war -->
+        <copy file="${top.root.dir}/tas/tca/dist/tca.war" todir="${tca.target.dir}/tca/webapps" preservelastmodified="true" overwrite="true" />
+        <!-- Copy the  config files -->
+        <copy  file="${top.root.dir}/tas/tca/config/tcaLog4j.properties.template" tofile="${tca.target.dir}/tca/conf/tcaLog4j.properties"/>
+        <copy  file="${top.root.dir}/tas/tca/config/tca.properties.template" tofile="${tca.target.dir}/tca/conf/tca.properties"/>
+        <!-- Copy the libs -->
+        <copy todir="${tca.target.dir}/tca/lib">
+            <fileset dir="${top.root.dir}/tas/tca/lib" includes="*.jar" />
+        </copy>
+    </target>
+
+
+    <!-- ****************************************************************** -->
+
+    <target name="copy-akka-server" depends="">
+        <!--property name="package.dir" value="${top.root.dir}/package"/-->
+        <!-- Create top directory under package -->
+        <property name="package" value="akka-server"/>
+
+        <mkdir dir="${package.target.dir}/${package}" />
+        <!-- Copy akka server files to package dir -->
+        <copy todir="${package.target.dir}/${package}" preservelastmodified="true" overwrite="true">
+            <fileset file="${akka.server.src.dir}/${akka.server.src.filename}"/>
+            <fileset file="${akka.server.src.dir}/install.xml"/>
+            <fileset file="${akka.server.src.dir}/install.properties"/>
+        </copy>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install"
+            depends="init"
+            description="Install everything in the currently checked out tree.">
+        <!-- NOTE: This does not depend on `build*' ON PURPOSE. -->
+        <!-- NOTE: This invokes the commands inline instead of listing them as
+                     a dependency ON PURPOSE.  It makes diffs more readable when things
+                     get added/deleted.  -->
+        <!-- FIXME: Still need to check intermodule dependency handling.  -->
+        <!-- ??? Maybe this should use parallel, but it's less critical.  -->
+        <sequential>
+            <antcall target="install-widget"/>
+            <antcall target="install-zini-java-api"/>
+            <antcall target="install-tas-utils"/>
+            <antcall target="install-tas-sso"/>
+            <antcall target="install-webutils"/>
+            <antcall target="install-advertiser"/>
+            <antcall target="install-ats"/>
+            <antcall target="install-cma"/>
+            <antcall target="install-mediabuying"/>
+            <antcall target="install-caa"/>
+            <antcall target="install-lls"/>
+            <antcall target="install-buildui"/>
+            <antcall target="install-pxl"/>
+            <antcall target="install-icornerstore"/>
+            <antcall target="install-joz"/>
+            <antcall target="install-ta"/>
+            <antcall target="install-tcm"/>
+            <antcall target="install-tlp"/>
+            <antcall target="install-logger"/>
+            <antcall target="install-publisher"/>
+            <antcall target="install-scapi"/>
+            <antcall target="install-scc"/>
+            <antcall target="install-wac"/>
+            <antcall target="install-tca"/>
+            <antcall target="install-soz"/>
+            <antcall target="install-tmc"/>
+            <antcall target="install-qac"/>
+            <antcall target="install-lp"/>
+            <antcall target="install-cof"/>
+            <antcall target="install-lca"/>
+            <antcall target="install-igs"/>
+        </sequential>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc"
+            depends="init"
+            description="Build docs for everything in the currently checked out tree.">
+        <!-- NOTE: This invokes the commands inline instead of listing them as
+                     a dependency ON PURPOSE.  It makes diffs more readable when things
+                     get added/deleted.  -->
+        <!-- FIXME: Should use parallel, but need to verify each subprojects
+                     build is playing nice.  -->
+        <!-- NOTE: The order shouldn't matter here, so for now to keep things
+                 clean projects are listed in alphabetical order.
+                 Keep it that way.  -->
+        <sequential>
+            <antcall target="build-doc-widget"/>
+            <antcall target="build-doc-ats"/>
+            <antcall target="build-doc-cma"/>
+            <antcall target="build-doc-mediabuying"/>
+            <antcall target="build-doc-caa"/>
+            <antcall target="build-doc-lls"/>
+            <antcall target="build-doc-llc"/>
+            <antcall target="build-doc-buildui"/>
+            <antcall target="build-doc-pxl"/>
+            <antcall target="build-doc-icornerstore"/>
+            <antcall target="build-doc-joz"/>
+            <antcall target="build-doc-jcl"/>
+            <antcall target="build-doc-jic"/>
+            <antcall target="build-doc-ta"/>
+            <antcall target="build-doc-tcm"/>
+            <antcall target="build-doc-tlp"/>
+            <antcall target="build-doc-logger"/>
+            <antcall target="build-doc-scapi"/>
+            <antcall target="build-doc-wac"/>
+            <antcall target="build-doc-tca"/>
+            <antcall target="build-doc-tas-utils"/>
+            <antcall target="build-doc-tas-sso"/>
+            <antcall target="build-doc-webutils"/>
+            <antcall target="build-doc-qac"/>
+            <antcall target="build-doc-lp"/>
+            <antcall target="build-doc-cof"/>
+            <antcall target="build-doc-lca"/>
+            <antcall target="build-doc-igs"/>
+        </sequential>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc"
+            depends="init"
+            description="Install docs for everything in the currently checked out tree.">
+        <!-- NOTE: This does not depend on `build-doc*' ON PURPOSE. -->
+        <!-- NOTE: This invokes the commands inline instead of listing them as
+                     a dependency ON PURPOSE.  It makes diffs more readable when things
+                     get added/deleted.  -->
+        <!-- ??? Maybe this should use parallel, but it's less critical.  -->
+        <!-- NOTE: The order shouldn't matter here, so for now to keep things
+                 clean projects are listed in alphabetical order.
+                 Keep it that way.  -->
+        <sequential>
+            <antcall target="install-widget"/>
+            <antcall target="install-doc-ats"/>
+            <antcall target="install-doc-cma"/>
+            <antcall target="install-doc-mediabuying"/>
+            <antcall target="install-doc-caa"/>
+            <antcall target="install-doc-lls"/>
+            <antcall target="install-doc-llc"/>
+            <antcall target="install-doc-buildui"/>
+            <antcall target="install-doc-pxl"/>
+            <antcall target="install-doc-icornerstore"/>
+            <antcall target="install-doc-joz"/>
+            <antcall target="install-doc-jcl"/>
+            <antcall target="install-doc-jic"/>
+            <antcall target="install-doc-ta"/>
+            <antcall target="install-doc-tcm"/>
+            <antcall target="install-doc-tlp"/>
+            <antcall target="install-doc-logger"/>
+            <antcall target="install-doc-wac"/>
+            <antcall target="install-doc-tca"/>
+            <antcall target="install-doc-tas-utils"/>
+            <antcall target="install-doc-tas-sso"/>
+            <antcall target="install-doc-webutils"/>
+            <antcall target="install-doc-qac"/>
+            <antcall target="install-doc-lp"/>
+            <antcall target="install-doc-cof"/>
+            <antcall target="install-doc-lca"/>
+            <antcall target="install-doc-igs"/>
+        </sequential>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests"
+            depends="init"
+            description="Run all project testsuites.">
+        <!-- NOTE: This invokes the commands inline instead of listing them as
+                     a dependency ON PURPOSE.  It makes diffs more readable when things
+                     get added/deleted.  -->
+        <!-- NOTE: The order shouldn't matter here, so for now to keep things
+                 clean projects are listed in alphabetical order.
+                 Keep it that way.  -->
+        <!-- ??? Could use parallel, but need to verify each subprojects
+                     testsuite is playing nice.  -->
+        <sequential>
+            <antcall target="run-tests-widget"/>
+            <antcall target="run-tests-ats"/>
+            <antcall target="run-tests-cma"/>
+            <antcall target="run-tests-mediabuying"/>
+            <antcall target="run-tests-caa"/>
+            <antcall target="run-tests-lls"/>
+            <antcall target="run-tests-buildui"/>
+            <antcall target="run-tests-pxl"/>
+            <antcall target="run-tests-icornerstore"/>
+            <antcall target="run-tests-jcl"/>
+            <antcall target="run-tests-jic"/>
+            <antcall target="run-tests-joz"/>
+            <antcall target="run-tests-ta"/>
+            <antcall target="run-tests-tcm"/>
+            <antcall target="run-tests-tlp"/>
+            <antcall target="run-tests-logger"/>
+            <antcall target="run-tests-scapi"/>
+            <antcall target="run-tests-wac"/>
+            <antcall target="run-tests-tca"/>
+            <antcall target="run-tests-tas-utils"/>
+            <antcall target="run-tests-tas-sso"/>
+            <antcall target="run-tests-webutils"/>
+            <antcall target="run-tests-qac"/>
+            <antcall target="run-tests-lp"/>
+            <antcall target="run-tests-cof"/>
+            <antcall target="run-tests-lca"/>
+            <antcall target="run-tests-igs"/>
+        </sequential>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-testreport"
+            depends="init"
+            description="Installs the test reports.">
+
+        <sequential>
+            <antcall target="install-report-jcl"/>
+            <antcall target="install-report-jic"/>
+            <antcall target="install-report-tas-utils"/>
+            <antcall target="install-report-tas-sso"/>
+            <antcall target="install-report-webutils"/>
+        </sequential>
+
+        <junitreport todir="${report.install.dir}">
+            <fileset dir="${report.install.dir}" includes="TEST-*.xml"/>
+            <report todir="${report.install.dir}"/>
+        </junitreport>
+
+    </target>
+
+</project>

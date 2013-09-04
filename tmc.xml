@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<project name="tmc" default="no-default" basedir="..">
+
+    <!-- tmc: tspec management console -->
+
+    <!-- NOTE WELL: This file is imported into the main build.xml file.
+         It is not intended to work standalone.  -->
+
+    <condition property="build.tmc">
+        <and>
+            <available file="Java/TSpecManager/build/build.xml"/>
+            <istrue value="${enable.tmc}"/>
+        </and>
+    </condition>
+
+    <!-- ****************************************************************** -->
+
+    <target name="clean-tmc"
+            description="Remove all tspec management console build objects from the tree."
+            if="build.tmc">
+        <ant dir="Java/TSpecManager" antfile="build/build.xml"
+             target="top-clean" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->    
+    <target name="build-tmc"
+            depends="init"
+            description="Build tspec management console."
+            if="build.tmc">
+        <ant dir="Java/TSpecManager" antfile="build/build.xml"
+             target="top-build" inheritAll="true" inheritRefs="false">
+             <property name="app.mode" value="tmc"/> 
+        </ant>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-tmc"
+            depends="init"
+            description="Install tspec management console."
+            if="build.tmc">
+        <!-- NOTE: This does not depend on `build-tmc' ON PURPOSE. -->
+        <ant dir="Java/TSpecManager" antfile="build/build.xml"
+             target="top-install" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="build-doc-tmc"
+            depends="init"
+            description="Build docs for tspec management console."
+            if="build.tmc">
+        <ant dir="Java/TSpecManager" antfile="build/build.xml"
+             target="top-build-doc" inheritAll="true" inheritRefs="false"/>
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="install-doc-tmc"
+            depends="init"
+            description="Install docs for tspec management console."
+            if="build.tmc">
+        <!-- NOTE: This does not depend on `build-doc-tmc' ON PURPOSE. -->
+        <!-- FIXME: not implemented yet -->
+    </target>
+
+    <!-- ****************************************************************** -->
+
+    <target name="run-tests-tmc"
+            depends="init"
+            description="Run the tspec management console testsuite."
+            if="build.tmc">
+	<echo message="no testsuite yet"/>
+    </target>
+
+</project>
